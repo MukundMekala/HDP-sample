@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HDP Risk Predictor</title>
+</head>
+<body>
+    <h2>Enter Patient Details</h2>
+    <form method="POST" action="/predict">
+        Systolic BP: <input type="number" name="systolic"><br><br>
+        Diastolic BP: <input type="number" name="diastolic"><br><br>
+        HRV: <input type="number" name="hrv" step="0.1"><br><br>
+
+        Symptoms:<br>
+        <input type="checkbox" name="headache"> Headache<br>
+        <input type="checkbox" name="swelling"> Swelling<br>
+        <input type="checkbox" name="blurred_vision"> Blurred Vision<br><br>
+
+        <button type="submit">Predict Risk</button>
+    </form>
+
+    {% if result %}
+        <h3>Predicted Risk: {{ result }}</h3>
+    {% endif %}
+</body>
+</html>
