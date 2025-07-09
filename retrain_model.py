@@ -1,32 +1,28 @@
-import random
-import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+import pickle
 
-def generate_patient():
-    return [
-        random.randint(110, 160), random.randint(70, 110),
-        round(random.uniform(20, 70), 2),
-        random.randint(0, 1), random.randint(0, 1), random.randint(0, 1)
-    ]
+# Sample dummy data (replace this with your actual dataset if available)
+data = pd.DataFrame({
+    'bp': [120, 140, 130, 110, 160, 100],
+    'swelling': [0, 1, 1, 0, 1, 0],
+    'headache': [0, 1, 1, 0, 1, 0],
+    'age': [25, 30, 28, 22, 35, 20],
+    'weight': [55, 80, 70, 50, 90, 45],
+    'heart_rate': [80, 95, 90, 75, 100, 70],
+    'risk': [0, 1, 1, 0, 1, 0]  # target column
+})
 
-data = [generate_patient() for _ in range(1000)]
-columns = ['systolic', 'diastolic', 'hrv', 'headache', 'swelling', 'blurred_vision']
-df = pd.DataFrame(data, columns=columns)
+# Define features and labels
+X = data[['bp', 'swelling', 'headache', 'age', 'weight', 'heart_rate']]
+y = data['risk']
 
-def assign_risk(row):
-    score = 0
-    if row['systolic'] > 140 or row['diastolic'] > 90: score += 1
-    if row['hrv'] < 30: score += 1
-    if row['headache'] + row['swelling'] + row['blurred_vision'] >= 2: score += 1
-    return min(score, 2)
+# Train model
+model = RandomForestClassifier()
+model.fit(X, y)
 
-df['risk'] = df.apply(assign_risk, axis=1)
+# Save the model to 'model.pkl'
+with open("model.pkl", "wb") as f:
+    pickle.dump(model, f)
 
-X = df.drop('risk', axis=1)
-y = df['risk']
-model = RandomForestClassifier().fit(X, y)
-
-print("Saving model to disk...")
-joblib.dump(model, 'hdp_risk_model.pkl')
-print("✅ Model saved.")
+print("✅ Model trained and saved successfully as model.pkl")
