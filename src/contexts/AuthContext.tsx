@@ -25,7 +25,6 @@ export function useAuth() {
 // Mock storage for demo
 let mockUsers: any[] = []
 let mockProfiles: UserProfile[] = []
-let currentUser: User | null = null
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
