@@ -6,8 +6,8 @@ import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Heart, Activity, Weight, AlertCircle } from 'lucide-react'
 
 // Mock database for demo
-let mockVitalsStorage: VitalsInput[] = []
-let mockRiskStorage: any[] = []
+const mockVitalsStorage: VitalsInput[] = []
+const mockRiskStorage: any[] = []
 
 interface VitalsFormProps {
   onSubmit: (vitals: VitalsInput) => void

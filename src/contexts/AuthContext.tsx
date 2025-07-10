@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
 import { UserProfile, UserRole } from '../types'
+
+// Mock User type for demo
+interface User {
+  id: string
+  email: string
+  created_at: string
+  updated_at: string
+}
 
 interface AuthContextType {
   user: User | null
@@ -23,8 +30,8 @@ export function useAuth() {
 }
 
 // Mock storage for demo
-let mockUsers: any[] = []
-let mockProfiles: UserProfile[] = []
+const mockUsers: any[] = []
+const mockProfiles: UserProfile[] = []
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)

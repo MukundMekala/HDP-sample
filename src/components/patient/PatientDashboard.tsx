@@ -297,7 +297,7 @@ export function PatientDashboard() {
                 <div className="text-center py-4">
                   <p className="text-gray-500">No risk assessment available</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    Log your vitals to get an AI-powered risk assessment
+                    {selectedPatient.due_date ? new Date(selectedPatient.due_date).toLocaleDateString() : 'Not provided'}
                   </p>
                 </div>
               )}
