@@ -2,50 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserRole } from '../types'
 
-// Mock Supabase client for demo purposes
-const mockSupabase = {
-  auth: {
-    getSession: () => Promise.resolve({ data: { session: null } }),
-    onAuthStateChange: (callback: any) => {
-      return { data: { subscription: { unsubscribe: () => {} } } }
-    },
-    signUp: ({ email, password }: any) => {
-      const mockUser = { id: 'mock-user-id', email }
-      return Promise.resolve({ data: { user: mockUser }, error: null })
-    },
-    signInWithPassword: ({ email, password }: any) => {
-      const mockUser = { id: 'mock-user-id', email }
-      return Promise.resolve({ data: { user: mockUser }, error: null })
-    },
-    signOut: () => Promise.resolve({ error: null })
-  },
-  from: (table: string) => ({
-    select: (columns: string) => ({
-      eq: (column: string, value: any) => ({
-        single: () => {
-          if (table === 'profiles') {
-            return Promise.resolve({
-              data: {
-                id: 'mock-user-id',
-                email: 'demo@example.com',
-                role: 'patient',
-                full_name: 'Demo User',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              },
-              error: null
-            })
-          }
-          return Promise.resolve({ data: null, error: null })
-        }
-      })
-    }),
-    insert: (data: any) => Promise.resolve({ data, error: null }),
-    update: (data: any) => ({
-      eq: (column: string, value: any) => Promise.resolve({ error: null })
-    })
-  })
-}
 interface AuthContextType {
   user: User | null
   profile: UserProfile | null
@@ -66,54 +22,28 @@ export function useAuth() {
   return context
 }
 
+// Mock storage for demo
+let mockUsers: any[] = []
+let mockProfiles: UserProfile[] = []
+let currentUser: User | null = null
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    mockSupabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = mockSupabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          await fetchProfile(session.user.id)
-        } else {
-          setProfile(null)
-          setLoading(false)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await mockSupabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setProfile(data)
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
+    // Check for existing session in localStorage
+    const savedUser = localStorage.getItem('mockUser')
+    const savedProfile = localStorage.getItem('mockProfile')
+    
+    if (savedUser && savedProfile) {
+      setUser(JSON.parse(savedUser))
+      setProfile(JSON.parse(savedProfile))
     }
-  }
+    
+    setLoading(false)
+  }, [])
 
   const signUp = async (
     email: string,
@@ -122,56 +52,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: UserRole,
     additionalData?: any
   ) => {
-    const { data, error } = await mockSupabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (error) throw error
-
-    if (data.user) {
-      // Create profile
-      const profileData = {
-        id: data.user.id,
-        email,
-        role,
-        full_name: fullName,
-        ...additionalData,
-      }
-
-      const { error: profileError } = await mockSupabase
-        .from('profiles')
-        .insert([profileData])
-
-      if (profileError) throw profileError
+    // Check if user already exists
+    if (mockUsers.find(u => u.email === email)) {
+      throw new Error('User already exists')
     }
+
+    const mockUser = {
+      id: `user-${Date.now()}`,
+      email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const mockProfile: UserProfile = {
+      id: mockUser.id,
+      email,
+      role,
+      full_name: fullName,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...additionalData
+    }
+
+    mockUsers.push(mockUser)
+    mockProfiles.push(mockProfile)
+
+    // Auto sign in after signup
+    setUser(mockUser as User)
+    setProfile(mockProfile)
+    
+    // Save to localStorage
+    localStorage.setItem('mockUser', JSON.stringify(mockUser))
+    localStorage.setItem('mockProfile', JSON.stringify(mockProfile))
   }
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await mockSupabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const existingUser = mockUsers.find(u => u.email === email)
+    const existingProfile = mockProfiles.find(p => p.email === email)
 
-    if (error) throw error
+    if (!existingUser || !existingProfile) {
+      throw new Error('Invalid credentials')
+    }
+
+    setUser(existingUser as User)
+    setProfile(existingProfile)
+    
+    // Save to localStorage
+    localStorage.setItem('mockUser', JSON.stringify(existingUser))
+    localStorage.setItem('mockProfile', JSON.stringify(existingProfile))
   }
 
   const signOut = async () => {
-    const { error } = await mockSupabase.auth.signOut()
-    if (error) throw error
+    setUser(null)
+    setProfile(null)
+    localStorage.removeItem('mockUser')
+    localStorage.removeItem('mockProfile')
   }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user) throw new Error('No user logged in')
+    if (!user || !profile) throw new Error('No user logged in')
 
-    const { error } = await mockSupabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+    const updatedProfile = { ...profile, ...updates, updated_at: new Date().toISOString() }
+    
+    // Update in mock storage
+    const profileIndex = mockProfiles.findIndex(p => p.id === profile.id)
+    if (profileIndex !== -1) {
+      mockProfiles[profileIndex] = updatedProfile
+    }
 
-    if (error) throw error
-
-    setProfile(prev => prev ? { ...prev, ...updates } : null)
+    setProfile(updatedProfile)
+    localStorage.setItem('mockProfile', JSON.stringify(updatedProfile))
   }
 
   const value = {

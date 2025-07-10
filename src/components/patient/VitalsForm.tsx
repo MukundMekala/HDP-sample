@@ -5,22 +5,9 @@ import { predictHDPRisk } from '../../services/api'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Heart, Activity, Weight, AlertCircle } from 'lucide-react'
 
-// Mock database operations for demo
-const mockDatabase = {
-  vitals: {
-    insert: (data: any) => ({
-      select: () => ({
-        single: () => Promise.resolve({
-          data: { ...data[0], id: 'mock-vitals-id' },
-          error: null
-        })
-      })
-    })
-  },
-  risk_predictions: {
-    insert: (data: any) => Promise.resolve({ data, error: null })
-  }
-}
+// Mock database for demo
+let mockVitalsStorage: VitalsInput[] = []
+let mockRiskStorage: any[] = []
 
 interface VitalsFormProps {
   onSubmit: (vitals: VitalsInput) => void
@@ -65,8 +52,9 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
     setLoading(true)
     try {
       const vitalsData: VitalsInput = {
+        id: `vitals-${Date.now()}`,
         patient_id: user.id,
-        date: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
         systolic_bp: parseInt(formData.systolic_bp),
         diastolic_bp: parseInt(formData.diastolic_bp),
         heart_rate: parseInt(formData.heart_rate),
@@ -74,24 +62,19 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
         symptoms: formData.symptoms,
         medication_taken: formData.medication_taken,
         notes: formData.notes,
+        created_at: new Date().toISOString(),
       }
 
-      // Save vitals to database
-      const { data, error } = await mockDatabase.vitals
-        .insert([vitalsData])
-        .select()
-        .single()
-
-      if (error) throw error
+      // Save vitals to mock storage
+      mockVitalsStorage.push(vitalsData)
 
       // Get AI risk prediction
-      const riskPrediction = await predictHDPRisk({ ...vitalsData, id: data.id })
+      const riskPrediction = await predictHDPRisk(vitalsData)
 
-      // Save risk prediction to database
-      await mockDatabase.risk_predictions
-        .insert([riskPrediction])
+      // Save risk prediction to mock storage
+      mockRiskStorage.push(riskPrediction)
 
-      onSubmit({ ...vitalsData, id: data.id })
+      onSubmit(vitalsData)
 
       // Reset form
       setFormData({
@@ -105,6 +88,7 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
       })
     } catch (error) {
       console.error('Error submitting vitals:', error)
+      alert('Error submitting vitals. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -248,10 +232,10 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
           {loading ? (
             <div className="flex items-center justify-center gap-2">
               <LoadingSpinner size="sm" />
-              <span>Analyzing...</span>
+              <span>Analyzing with AI...</span>
             </div>
           ) : (
-            'Submit Vitals'
+            'Submit Vitals & Get AI Risk Assessment'
           )}
         </button>
       </form>
