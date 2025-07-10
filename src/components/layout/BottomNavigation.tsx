@@ -1,4 +1,3 @@
-import React from 'react'
 import { Home, Activity, TrendingUp, User } from 'lucide-react'
 import { cn } from '../../lib/utils'
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { VitalsInput, RiskPrediction, TrendData } from '../../types'
 import { VitalsForm } from './VitalsForm'

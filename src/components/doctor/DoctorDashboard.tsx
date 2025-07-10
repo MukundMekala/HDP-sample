@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { UserProfile, VitalsInput, RiskPrediction } from '../../types'
 import { Chart } from '../ui/Chart'
 import { RiskBadge } from '../ui/RiskBadge'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
-import { Users, AlertTriangle, TrendingUp, MessageSquare, Search } from 'lucide-react'
+import { Users, AlertTriangle, Search } from 'lucide-react'
 
 // Mock data for demo
 const mockPatients: PatientWithLatestVitals[] = [

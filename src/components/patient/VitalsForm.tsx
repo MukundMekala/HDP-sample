@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { VitalsInput } from '../../types'
 import { useAuth } from '../../contexts/AuthContext'
 import { predictHDPRisk } from '../../services/api'

@@ -1,4 +1,3 @@
-import React from 'react'
 import { cn, getRiskColor } from '../../lib/utils'
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 

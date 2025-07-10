@@ -1,6 +1,5 @@
-import React from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { Users, AlertTriangle, TrendingUp, User, LogOut, Heart } from 'lucide-react'
+import { Users, AlertTriangle, User, LogOut, Heart } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface SidebarProps {
