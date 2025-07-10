@@ -1,8 +1,51 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
 import { UserProfile, UserRole } from '../types'
 
+// Mock Supabase client for demo purposes
+const mockSupabase = {
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null } }),
+    onAuthStateChange: (callback: any) => {
+      return { data: { subscription: { unsubscribe: () => {} } } }
+    },
+    signUp: ({ email, password }: any) => {
+      const mockUser = { id: 'mock-user-id', email }
+      return Promise.resolve({ data: { user: mockUser }, error: null })
+    },
+    signInWithPassword: ({ email, password }: any) => {
+      const mockUser = { id: 'mock-user-id', email }
+      return Promise.resolve({ data: { user: mockUser }, error: null })
+    },
+    signOut: () => Promise.resolve({ error: null })
+  },
+  from: (table: string) => ({
+    select: (columns: string) => ({
+      eq: (column: string, value: any) => ({
+        single: () => {
+          if (table === 'profiles') {
+            return Promise.resolve({
+              data: {
+                id: 'mock-user-id',
+                email: 'demo@example.com',
+                role: 'patient',
+                full_name: 'Demo User',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              error: null
+            })
+          }
+          return Promise.resolve({ data: null, error: null })
+        }
+      })
+    }),
+    insert: (data: any) => Promise.resolve({ data, error: null }),
+    update: (data: any) => ({
+      eq: (column: string, value: any) => Promise.resolve({ error: null })
+    })
+  })
+}
 interface AuthContextType {
   user: User | null
   profile: UserProfile | null
@@ -30,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    mockSupabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchProfile(session.user.id)
@@ -40,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = mockSupabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
@@ -57,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await mockSupabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -79,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: UserRole,
     additionalData?: any
   ) => {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await mockSupabase.auth.signUp({
       email,
       password,
     })
@@ -96,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...additionalData,
       }
 
-      const { error: profileError } = await supabase
+      const { error: profileError } = await mockSupabase
         .from('profiles')
         .insert([profileData])
 
@@ -105,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await mockSupabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -114,14 +157,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await mockSupabase.auth.signOut()
     if (error) throw error
   }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) throw new Error('No user logged in')
 
-    const { error } = await supabase
+    const { error } = await mockSupabase
       .from('profiles')
       .update(updates)
       .eq('id', user.id)

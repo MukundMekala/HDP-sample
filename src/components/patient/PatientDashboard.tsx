@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
 import { VitalsInput, RiskPrediction, TrendData } from '../../types'
 import { VitalsForm } from './VitalsForm'
 import { Chart } from '../ui/Chart'
@@ -8,6 +7,33 @@ import { RiskBadge } from '../ui/RiskBadge'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { calculateWeeksPregnant } from '../../lib/utils'
 import { Heart, MessageCircle, TrendingUp, Calendar, Baby } from 'lucide-react'
+
+// Mock data for demo
+const mockVitals: VitalsInput[] = [
+  {
+    id: '1',
+    patient_id: 'mock-user-id',
+    date: new Date().toISOString().split('T')[0],
+    systolic_bp: 120,
+    diastolic_bp: 80,
+    heart_rate: 72,
+    weight: 65.5,
+    symptoms: [],
+    medication_taken: false,
+    notes: 'Feeling good today',
+    created_at: new Date().toISOString()
+  }
+]
+
+const mockRisk: RiskPrediction = {
+  id: '1',
+  patient_id: 'mock-user-id',
+  vitals_id: '1',
+  risk_level: 'low',
+  risk_score: 0.2,
+  factors: [],
+  created_at: new Date().toISOString()
+}
 
 export function PatientDashboard() {
   const { profile } = useAuth()
@@ -32,43 +58,17 @@ export function PatientDashboard() {
   const fetchVitals = async () => {
     if (!profile) return
 
-    try {
-      const { data, error } = await supabase
-        .from('vitals')
-        .select('*')
-        .eq('patient_id', profile.id)
-        .order('date', { ascending: false })
-        .limit(30)
-
-      if (error) throw error
-
-      setVitals(data || [])
-      generateTrendData(data || [])
-    } catch (error) {
-      console.error('Error fetching vitals:', error)
-    } finally {
-      setLoading(false)
-    }
+    // Use mock data for demo
+    setVitals(mockVitals)
+    generateTrendData(mockVitals)
+    setLoading(false)
   }
 
   const fetchLatestRisk = async () => {
     if (!profile) return
 
-    try {
-      const { data, error } = await supabase
-        .from('risk_predictions')
-        .select('*')
-        .eq('patient_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-
-      setLatestRisk(data)
-    } catch (error) {
-      console.error('Error fetching risk prediction:', error)
-    }
+    // Use mock data for demo
+    setLatestRisk(mockRisk)
   }
 
   const generateTrendData = (vitalsData: VitalsInput[]) => {

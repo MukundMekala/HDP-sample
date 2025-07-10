@@ -1,11 +1,74 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
 import { UserProfile, VitalsInput, RiskPrediction } from '../../types'
 import { Chart } from '../ui/Chart'
 import { RiskBadge } from '../ui/RiskBadge'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Users, AlertTriangle, TrendingUp, MessageSquare, Search } from 'lucide-react'
+
+// Mock data for demo
+const mockPatients: PatientWithLatestVitals[] = [
+  {
+    id: 'patient-1',
+    email: 'patient1@example.com',
+    role: 'patient',
+    full_name: 'Sarah Johnson',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    latest_vitals: {
+      id: '1',
+      patient_id: 'patient-1',
+      date: new Date().toISOString().split('T')[0],
+      systolic_bp: 140,
+      diastolic_bp: 90,
+      heart_rate: 85,
+      weight: 70,
+      symptoms: ['headache'],
+      medication_taken: true,
+      created_at: new Date().toISOString()
+    },
+    latest_risk: {
+      id: '1',
+      patient_id: 'patient-1',
+      vitals_id: '1',
+      risk_level: 'high',
+      risk_score: 0.8,
+      factors: ['High blood pressure', 'Headache symptoms'],
+      created_at: new Date().toISOString()
+    },
+    vitals_count: 15
+  },
+  {
+    id: 'patient-2',
+    email: 'patient2@example.com',
+    role: 'patient',
+    full_name: 'Emily Davis',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    latest_vitals: {
+      id: '2',
+      patient_id: 'patient-2',
+      date: new Date().toISOString().split('T')[0],
+      systolic_bp: 115,
+      diastolic_bp: 75,
+      heart_rate: 68,
+      weight: 62,
+      symptoms: [],
+      medication_taken: false,
+      created_at: new Date().toISOString()
+    },
+    latest_risk: {
+      id: '2',
+      patient_id: 'patient-2',
+      vitals_id: '2',
+      risk_level: 'low',
+      risk_score: 0.2,
+      factors: [],
+      created_at: new Date().toISOString()
+    },
+    vitals_count: 8
+  }
+]
 
 interface PatientWithLatestVitals extends UserProfile {
   latest_vitals?: VitalsInput
@@ -31,84 +94,19 @@ export function DoctorDashboard() {
   const fetchPatients = async () => {
     if (!profile) return
 
-    try {
-      // In a real app, you'd have a patient-doctor assignment table
-      // For now, we'll fetch all patients
-      const { data: patientsData, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'patient')
-
-      if (error) throw error
-
-      // Fetch latest vitals and risk for each patient
-      const patientsWithData = await Promise.all(
-        (patientsData || []).map(async (patient) => {
-          // Get latest vitals
-          const { data: vitalsData } = await supabase
-            .from('vitals')
-            .select('*')
-            .eq('patient_id', patient.id)
-            .order('date', { ascending: false })
-            .limit(1)
-
-          // Get latest risk
-          const { data: riskData } = await supabase
-            .from('risk_predictions')
-            .select('*')
-            .eq('patient_id', patient.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-
-          // Get vitals count
-          const { count } = await supabase
-            .from('vitals')
-            .select('*', { count: 'exact', head: true })
-            .eq('patient_id', patient.id)
-
-          return {
-            ...patient,
-            latest_vitals: vitalsData?.[0],
-            latest_risk: riskData?.[0],
-            vitals_count: count || 0,
-          }
-        })
-      )
-
-      setPatients(patientsWithData)
-    } catch (error) {
-      console.error('Error fetching patients:', error)
-    } finally {
-      setLoading(false)
-    }
+    // Use mock data for demo
+    setPatients(mockPatients)
+    setLoading(false)
   }
 
   const fetchPatientDetails = async (patient: PatientWithLatestVitals) => {
-    try {
-      // Fetch all vitals for the patient
-      const { data: vitalsData, error: vitalsError } = await supabase
-        .from('vitals')
-        .select('*')
-        .eq('patient_id', patient.id)
-        .order('date', { ascending: false })
-
-      if (vitalsError) throw vitalsError
-
-      // Fetch all risk predictions for the patient
-      const { data: risksData, error: risksError } = await supabase
-        .from('risk_predictions')
-        .select('*')
-        .eq('patient_id', patient.id)
-        .order('created_at', { ascending: false })
-
-      if (risksError) throw risksError
-
-      setPatientVitals(vitalsData || [])
-      setPatientRisks(risksData || [])
-      setSelectedPatient(patient)
-    } catch (error) {
-      console.error('Error fetching patient details:', error)
-    }
+    // Use mock data for demo
+    const mockPatientVitals = patient.latest_vitals ? [patient.latest_vitals] : []
+    const mockPatientRisks = patient.latest_risk ? [patient.latest_risk] : []
+    
+    setPatientVitals(mockPatientVitals)
+    setPatientRisks(mockPatientRisks)
+    setSelectedPatient(patient)
   }
 
   const getHighRiskPatients = () => {

@@ -10,7 +10,7 @@ export interface UserProfile {
   // Patient-specific fields
   last_period_date?: string
   due_date?: string
-  doctor_id?: string
+  assigned_doctor_id?: string
   // Doctor-specific fields
   license_number?: string
   specialization?: string

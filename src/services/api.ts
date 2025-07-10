@@ -1,6 +1,27 @@
 import { VitalsInput, RiskPrediction } from '../types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+// Mock ML model for demo purposes
+const mockMLModel = {
+  predict: (input: HDPPredictionInput): HDPPredictionResponse => {
+    // Simple rule-based prediction for demo
+    let riskScore = 0
+    
+    if (input.bp > 140) riskScore += 0.4
+    if (input.heart_rate > 100) riskScore += 0.2
+    if (input.swelling === 1) riskScore += 0.2
+    if (input.headache === 1) riskScore += 0.2
+    if (input.weight > 80) riskScore += 0.1
+    if (input.age > 35) riskScore += 0.1
+    
+    const prediction = riskScore > 0.5 ? 1 : 0
+    
+    return {
+      input,
+      risk_prediction: prediction,
+      message: prediction === 1 ? "High risk of HDP" : "Low risk of HDP"
+    }
+  }
+}
 
 export interface HDPPredictionInput {
   bp: number
@@ -18,57 +39,31 @@ export interface HDPPredictionResponse {
 }
 
 export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPrediction> {
-  try {
-    // Convert vitals to the format expected by the FastAPI backend
-    const input: HDPPredictionInput = {
-      bp: vitals.systolic_bp,
-      swelling: vitals.symptoms.includes('swelling') ? 1 : 0,
-      headache: vitals.symptoms.includes('headache') ? 1 : 0,
-      age: 28, // Default age - in a real app, this would come from user profile
-      weight: vitals.weight,
-      heart_rate: vitals.heart_rate,
-    }
+  // Convert vitals to the format expected by the ML model
+  const input: HDPPredictionInput = {
+    bp: vitals.systolic_bp,
+    swelling: vitals.symptoms.includes('swelling') ? 1 : 0,
+    headache: vitals.symptoms.includes('headache') ? 1 : 0,
+    age: 28, // Default age - in a real app, this would come from user profile
+    weight: vitals.weight,
+    heart_rate: vitals.heart_rate,
+  }
 
-    const response = await fetch(`${API_BASE_URL}/predict`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(input),
-    })
+  // Use mock ML model for demo
+  const data = mockMLModel.predict(input)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+  // Convert the response to our RiskPrediction format
+  const riskLevel = data.risk_prediction === 1 ? 'high' : 'low'
+  const riskScore = data.risk_prediction === 1 ? 0.8 : 0.2
 
-    const data: HDPPredictionResponse = await response.json()
-
-    // Convert the response to our RiskPrediction format
-    const riskLevel = data.risk_prediction === 1 ? 'high' : 'low'
-    const riskScore = data.risk_prediction
-
-    return {
-      id: crypto.randomUUID(),
-      patient_id: vitals.patient_id,
-      vitals_id: vitals.id || crypto.randomUUID(),
-      risk_level: riskLevel,
-      risk_score: riskScore,
-      factors: determineRiskFactors(input, data.risk_prediction),
-      created_at: new Date().toISOString(),
-    }
-  } catch (error) {
-    console.error('Error predicting HDP risk:', error)
-    
-    // Fallback to mock prediction if API is unavailable
-    return {
-      id: crypto.randomUUID(),
-      patient_id: vitals.patient_id,
-      vitals_id: vitals.id || crypto.randomUUID(),
-      risk_level: 'low',
-      risk_score: 0.3,
-      factors: ['API unavailable - using fallback'],
-      created_at: new Date().toISOString(),
-    }
+  return {
+    id: crypto.randomUUID(),
+    patient_id: vitals.patient_id,
+    vitals_id: vitals.id || crypto.randomUUID(),
+    risk_level: riskLevel,
+    risk_score: riskScore,
+    factors: determineRiskFactors(input, data.risk_prediction),
+    created_at: new Date().toISOString(),
   }
 }
 

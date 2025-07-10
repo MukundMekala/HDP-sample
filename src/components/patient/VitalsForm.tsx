@@ -1,10 +1,26 @@
 import React, { useState } from 'react'
 import { VitalsInput } from '../../types'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
 import { predictHDPRisk } from '../../services/api'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Heart, Activity, Weight, AlertCircle } from 'lucide-react'
+
+// Mock database operations for demo
+const mockDatabase = {
+  vitals: {
+    insert: (data: any) => ({
+      select: () => ({
+        single: () => Promise.resolve({
+          data: { ...data[0], id: 'mock-vitals-id' },
+          error: null
+        })
+      })
+    })
+  },
+  risk_predictions: {
+    insert: (data: any) => Promise.resolve({ data, error: null })
+  }
+}
 
 interface VitalsFormProps {
   onSubmit: (vitals: VitalsInput) => void
@@ -61,8 +77,7 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
       }
 
       // Save vitals to database
-      const { data, error } = await supabase
-        .from('vitals')
+      const { data, error } = await mockDatabase.vitals
         .insert([vitalsData])
         .select()
         .single()
@@ -73,8 +88,7 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
       const riskPrediction = await predictHDPRisk({ ...vitalsData, id: data.id })
 
       // Save risk prediction to database
-      await supabase
-        .from('risk_predictions')
+      await mockDatabase.risk_predictions
         .insert([riskPrediction])
 
       onSubmit({ ...vitalsData, id: data.id })
