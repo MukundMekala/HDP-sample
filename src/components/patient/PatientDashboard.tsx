@@ -9,9 +9,9 @@ import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { calculateWeeksPregnant } from '../../lib/utils'
 import { Heart, MessageCircle, TrendingUp, Calendar, Baby, AlertCircle } from 'lucide-react'
 
-// Mock data for demo
-const mockVitals: VitalsInput[] = []
-let mockRisk: RiskPrediction | null = null
+// Mock storage for demo - make these global so they persist
+export const mockVitalsStorage: VitalsInput[] = []
+export const mockRiskStorage: RiskPrediction[] = []
 
 export function PatientDashboard() {
   const { profile } = useAuth()
@@ -29,15 +29,16 @@ export function PatientDashboard() {
   const fetchLatestRisk = useCallback(async () => {
     if (!profile) return
 
-    // Get the latest risk from mock storage or calculate it
-    if (mockRisk) {
-      setLatestRisk(mockRisk)
+    // Get the latest risk from mock storage
+    const latestRisk = mockRiskStorage.find(r => r.patient_id === profile.id)
+    if (latestRisk) {
+      setLatestRisk(latestRisk)
     } else if (vitals.length > 0) {
       // Calculate risk for the latest vitals
       try {
         const latestVitals = vitals[0]
         const riskPrediction = await predictHDPRisk(latestVitals)
-        mockRisk = riskPrediction
+        mockRiskStorage.push(riskPrediction)
         setLatestRisk(riskPrediction)
       } catch (error) {
         console.error('Error calculating risk:', error)
@@ -48,12 +49,13 @@ export function PatientDashboard() {
   const fetchVitals = useCallback(async () => {
     if (!profile) return
 
-    // Use mock data for demo - start with empty array
-    setVitals(mockVitals)
-    generateTrendData(mockVitals)
+    // Get vitals for this patient from mock storage
+    const patientVitals = mockVitalsStorage.filter(v => v.patient_id === profile.id)
+    setVitals(patientVitals)
+    generateTrendData(patientVitals)
     
     // Get latest risk if vitals exist
-    if (mockVitals.length > 0) {
+    if (patientVitals.length > 0) {
       await fetchLatestRisk()
     }
     
@@ -95,11 +97,9 @@ export function PatientDashboard() {
     generateTrendData(updatedVitals)
     
     // Update risk prediction
-    mockRisk = riskPrediction
     setLatestRisk(riskPrediction)
     
-    // Update mock storage
-    mockVitals.unshift(newVitals)
+    // Note: VitalsForm already adds to mockVitalsStorage and mockRiskStorage
     
     setShowVitalsForm(false)
   }
