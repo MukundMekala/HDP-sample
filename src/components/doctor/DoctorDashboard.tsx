@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { UserProfile, VitalsInput, RiskPrediction } from '../../types'
 import { Chart } from '../ui/Chart'
@@ -89,15 +89,15 @@ export function DoctorDashboard() {
     if (profile) {
       fetchPatients()
     }
-  }, [profile])
+  }, [profile, fetchPatients])
 
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     if (!profile) return
 
     // Use mock data for demo
     setPatients(mockPatients)
     setLoading(false)
-  }
+  }, [profile])
 
   const fetchPatientDetails = async (patient: PatientWithLatestVitals) => {
     // Use mock data for demo

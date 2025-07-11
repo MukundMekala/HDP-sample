@@ -33,7 +33,7 @@ export function AuthForm() {
       if (isLogin) {
         await signIn(email, password)
       } else {
-        const additionalData: any = {}
+        const additionalData: Record<string, string> = {}
         
         if (role === 'patient') {
           if (lastPeriodDate) additionalData.last_period_date = lastPeriodDate
@@ -45,8 +45,8 @@ export function AuthForm() {
 
         await signUp(email, password, fullName, role, additionalData)
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }

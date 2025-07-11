@@ -1,5 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext'
-import { Users, AlertTriangle, User, LogOut, Heart } from 'lucide-react'
+import { Users, AlertTriangle, User, LogOut, Heart, LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface SidebarProps {
@@ -7,7 +7,7 @@ interface SidebarProps {
   onTabChange: (tab: string) => void
 }
 
-const tabs = [
+const tabs: Array<{ id: string; label: string; icon: LucideIcon }> = [
   { id: 'dashboard', label: 'Dashboard', icon: Users },
   { id: 'patients', label: 'Patients', icon: Users },
   { id: 'alerts', label: 'Alerts', icon: AlertTriangle },

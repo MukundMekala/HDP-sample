@@ -10,7 +10,7 @@ import {
   ChartOptions,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import { ChartDataPoint } from '../../types'
+import type { ChartDataPoint } from '../../types'
 
 ChartJS.register(
   CategoryScale,

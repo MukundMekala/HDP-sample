@@ -5,10 +5,6 @@ import { predictHDPRisk } from '../../services/api'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Heart, Activity, Weight, AlertCircle } from 'lucide-react'
 
-// Mock database for demo
-const mockVitalsStorage: VitalsInput[] = []
-const mockRiskStorage: any[] = []
-
 interface VitalsFormProps {
   onSubmit: (vitals: VitalsInput, riskPrediction: RiskPrediction) => void
 }

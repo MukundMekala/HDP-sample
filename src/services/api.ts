@@ -1,6 +1,6 @@
 import { VitalsInput, RiskPrediction } from '../types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://hdp-backend-production.up.railway.app'
 
 export interface HDPPredictionInput {
   bp: number
@@ -197,7 +197,7 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
     console.log('🔄 Sending prediction request with input:', input)
 
     // Try to call the actual API first
-    /* try {
+    try {
       const response = await fetch(`${API_BASE_URL}/predict`, {
         method: 'POST',
         headers: {
@@ -227,9 +227,9 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
       } else {
         console.log('⚠️ API response not ok, using enhanced clinical model')
       }
-    } catch (apiError) { */
+    } catch (apiError) {
       console.log('⚠️ API not available, using enhanced clinical model:', apiError)
-    /* } */
+    }
 
     // Use enhanced clinical model (primary prediction system)
     const data = enhancedClinicalModel.predict(input)

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { UserProfile, UserRole } from '../types'
 
 // Mock User type for demo
@@ -33,7 +33,7 @@ export function useAuth() {
 const mockUsers: any[] = []
 const mockProfiles: UserProfile[] = []
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)

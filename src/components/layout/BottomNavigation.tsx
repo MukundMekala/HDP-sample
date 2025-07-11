@@ -1,4 +1,4 @@
-import { Home, Activity, TrendingUp, User } from 'lucide-react'
+import { Home, Activity, TrendingUp, User, LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface BottomNavigationProps {
@@ -6,7 +6,7 @@ interface BottomNavigationProps {
   onTabChange: (tab: string) => void
 }
 
-const tabs = [
+const tabs: Array<{ id: string; label: string; icon: LucideIcon }> = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'input', label: 'Input', icon: Activity },
   { id: 'insights', label: 'Insights', icon: TrendingUp },

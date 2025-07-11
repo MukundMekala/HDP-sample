@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { VitalsInput, RiskPrediction, TrendData, UserProfile } from '../../types'
+import { VitalsInput, RiskPrediction, TrendData } from '../../types'
 import { predictHDPRisk } from '../../services/api'
 import { VitalsForm } from './VitalsForm'
 import { Chart } from '../ui/Chart'
 import { RiskBadge } from '../ui/RiskBadge'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { calculateWeeksPregnant } from '../../lib/utils'
-import { Heart, MessageCircle, TrendingUp, Calendar, Baby } from 'lucide-react'
+import { Heart, MessageCircle, TrendingUp, Calendar, Baby, AlertCircle } from 'lucide-react'
 
 // Mock data for demo
 const mockVitals: VitalsInput[] = []
@@ -30,9 +30,9 @@ export function PatientDashboard() {
     if (profile) {
       fetchVitals()
     }
-  }, [profile])
+  }, [profile, fetchVitals])
 
-  const fetchVitals = async () => {
+  const fetchVitals = useCallback(async () => {
     if (!profile) return
 
     // Use mock data for demo - start with empty array
@@ -45,9 +45,9 @@ export function PatientDashboard() {
     }
     
     setLoading(false)
-  }
+  }, [profile])
 
-  const fetchLatestRisk = async () => {
+  const fetchLatestRisk = useCallback(async () => {
     if (!profile) return
 
     // Get the latest risk from mock storage or calculate it
@@ -64,7 +64,7 @@ export function PatientDashboard() {
         console.error('Error calculating risk:', error)
       }
     }
-  }
+  }, [profile, vitals])
 
   const generateTrendData = (vitalsData: VitalsInput[]) => {
     const trends: TrendData = {
