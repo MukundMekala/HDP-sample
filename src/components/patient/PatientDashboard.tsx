@@ -26,27 +26,6 @@ export function PatientDashboard() {
   const [loading, setLoading] = useState(true)
   const [showVitalsForm, setShowVitalsForm] = useState(false)
 
-  useEffect(() => {
-    if (profile) {
-      fetchVitals()
-    }
-  }, [profile, fetchVitals])
-
-  const fetchVitals = useCallback(async () => {
-    if (!profile) return
-
-    // Use mock data for demo - start with empty array
-    setVitals(mockVitals)
-    generateTrendData(mockVitals)
-    
-    // Get latest risk if vitals exist
-    if (mockVitals.length > 0) {
-      await fetchLatestRisk()
-    }
-    
-    setLoading(false)
-  }, [profile])
-
   const fetchLatestRisk = useCallback(async () => {
     if (!profile) return
 
@@ -65,6 +44,27 @@ export function PatientDashboard() {
       }
     }
   }, [profile, vitals])
+
+  const fetchVitals = useCallback(async () => {
+    if (!profile) return
+
+    // Use mock data for demo - start with empty array
+    setVitals(mockVitals)
+    generateTrendData(mockVitals)
+    
+    // Get latest risk if vitals exist
+    if (mockVitals.length > 0) {
+      await fetchLatestRisk()
+    }
+    
+    setLoading(false)
+  }, [profile, fetchLatestRisk])
+
+  useEffect(() => {
+    if (profile) {
+      fetchVitals()
+    }
+  }, [profile, fetchVitals])
 
   const generateTrendData = (vitalsData: VitalsInput[]) => {
     const trends: TrendData = {
