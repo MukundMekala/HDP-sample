@@ -1,5 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext'
-import { Users, AlertTriangle, User, LogOut, Heart, LucideIcon } from 'lucide-react'
+import { Users, AlertTriangle, User, LogOut, Heart, DivideIcon as LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface SidebarProps {

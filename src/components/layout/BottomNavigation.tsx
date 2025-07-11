@@ -1,4 +1,4 @@
-import { Home, Activity, TrendingUp, User, LucideIcon } from 'lucide-react'
+import { Home, Activity, TrendingUp, User, DivideIcon as LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface BottomNavigationProps {
