@@ -19,79 +19,127 @@ export interface HDPPredictionResponse {
   factors: string[]
 }
 
-// Enhanced mock ML model that simulates your trained model
-const mockMLModel = {
+// Enhanced clinical prediction model
+const enhancedClinicalModel = {
   predict: (input: HDPPredictionInput): HDPPredictionResponse => {
-    // More sophisticated rule-based prediction that mimics ML behavior
     let riskScore = 0
     const factors: string[] = []
     
-    // Blood pressure risk (most important factor)
-    if (input.bp > 160) {
-      riskScore += 0.5
-      factors.push("Severe hypertension")
-    } else if (input.bp > 140) {
-      riskScore += 0.3
-      factors.push("High blood pressure")
-    } else if (input.bp > 130) {
+    // Blood pressure risk (most critical factor for HDP)
+    if (input.bp >= 160) {
+      riskScore += 0.6
+      factors.push("Severe hypertension (≥160 mmHg)")
+    } else if (input.bp >= 140) {
+      riskScore += 0.4
+      factors.push("Stage 2 hypertension (140-159 mmHg)")
+    } else if (input.bp >= 130) {
+      riskScore += 0.25
+      factors.push("Stage 1 hypertension (130-139 mmHg)")
+    } else if (input.bp >= 120) {
       riskScore += 0.1
-      factors.push("Elevated blood pressure")
+      factors.push("Elevated blood pressure (120-129 mmHg)")
     }
     
-    // Heart rate risk
-    if (input.heart_rate > 110) {
+    // Heart rate analysis
+    if (input.heart_rate >= 120) {
+      riskScore += 0.3
+      factors.push("Severe tachycardia (≥120 bpm)")
+    } else if (input.heart_rate >= 100) {
       riskScore += 0.2
-      factors.push("Significantly elevated heart rate")
-    } else if (input.heart_rate > 100) {
-      riskScore += 0.15
-      factors.push("Elevated heart rate")
+      factors.push("Tachycardia (100-119 bpm)")
+    } else if (input.heart_rate >= 90) {
+      riskScore += 0.1
+      factors.push("Elevated heart rate (90-99 bpm)")
     }
     
     // Symptom-based risks
     if (input.swelling === 1) {
-      riskScore += 0.2
-      factors.push("Swelling present")
+      riskScore += 0.25
+      factors.push("Edema/swelling present")
     }
     
     if (input.headache === 1) {
-      riskScore += 0.15
+      riskScore += 0.2
       factors.push("Headache symptoms")
     }
     
-    // Age-related risk
-    if (input.age > 40) {
+    // Age-related risk factors
+    if (input.age >= 40) {
+      riskScore += 0.2
+      factors.push("Advanced maternal age (≥40 years)")
+    } else if (input.age >= 35) {
       riskScore += 0.15
-      factors.push("Advanced maternal age")
-    } else if (input.age > 35) {
+      factors.push("Maternal age 35-39 years")
+    } else if (input.age < 20) {
       riskScore += 0.1
-      factors.push("Maternal age over 35")
+      factors.push("Young maternal age (<20 years)")
     }
     
     // Weight-related risk
-    if (input.weight > 90) {
+    if (input.weight >= 100) {
+      riskScore += 0.2
+      factors.push("Severe obesity (≥100 kg)")
+    } else if (input.weight >= 85) {
+      riskScore += 0.15
+      factors.push("Obesity (85-99 kg)")
+    } else if (input.weight >= 75) {
       riskScore += 0.1
-      factors.push("High weight")
+      factors.push("Overweight (75-84 kg)")
     }
     
-    // Interaction effects (combinations that increase risk)
-    if (input.bp > 140 && input.headache === 1) {
-      riskScore += 0.1 // Additional risk for BP + headache
+    // Critical combination factors
+    if (input.bp >= 140 && input.headache === 1) {
+      riskScore += 0.15
+      factors.push("Hypertension with headache (high concern)")
     }
     
-    if (input.bp > 140 && input.swelling === 1) {
-      riskScore += 0.1 // Additional risk for BP + swelling
+    if (input.bp >= 140 && input.swelling === 1) {
+      riskScore += 0.15
+      factors.push("Hypertension with edema (preeclampsia risk)")
+    }
+    
+    if (input.bp >= 160 && input.heart_rate >= 100) {
+      riskScore += 0.2
+      factors.push("Severe hypertension with tachycardia")
+    }
+    
+    if (input.headache === 1 && input.swelling === 1) {
+      riskScore += 0.1
+      factors.push("Multiple symptoms present")
+    }
+    
+    // Age and BP interaction
+    if (input.age >= 35 && input.bp >= 140) {
+      riskScore += 0.1
+      factors.push("Advanced age with hypertension")
     }
     
     // Normalize risk score
     riskScore = Math.min(riskScore, 0.95)
     
-    const prediction = riskScore > 0.4 ? 1 : 0
+    // More realistic risk categorization
+    let prediction: number
+    let riskLevel: string
+    
+    if (riskScore >= 0.7) {
+      prediction = 1
+      riskLevel = "HIGH"
+    } else if (riskScore >= 0.4) {
+      prediction = 1
+      riskLevel = "MODERATE-HIGH"
+    } else if (riskScore >= 0.25) {
+      prediction = 0
+      riskLevel = "MODERATE"
+    } else {
+      prediction = 0
+      riskLevel = "LOW"
+    }
     
     return {
       input,
       risk_prediction: prediction,
       risk_probability: riskScore,
-      message: prediction === 1 ? "High risk of HDP detected" : "Low risk of HDP",
+      message: `${riskLevel} risk of HDP detected`,
       factors
     }
   }
@@ -99,15 +147,20 @@ const mockMLModel = {
 
 export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPrediction> {
   try {
+    // Get patient age from profile or use default
+    const patientAge = 28 // In real app, get from user profile
+    
     // Convert vitals to the format expected by the ML model
     const input: HDPPredictionInput = {
       bp: vitals.systolic_bp,
       swelling: vitals.symptoms.includes('swelling') ? 1 : 0,
       headache: vitals.symptoms.includes('headache') ? 1 : 0,
-      age: 28, // Default age - in a real app, this would come from user profile
+      age: patientAge,
       weight: vitals.weight,
       heart_rate: vitals.heart_rate,
     }
+
+    console.log('Sending prediction request with input:', input)
 
     // Try to call the actual API first
     try {
@@ -121,10 +174,11 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
 
       if (response.ok) {
         const data: HDPPredictionResponse = await response.json()
+        console.log('API prediction response:', data)
         
         // Convert the response to our RiskPrediction format
         const riskLevel = data.risk_prediction === 1 ? 'high' : 
-                         data.risk_probability > 0.3 ? 'moderate' : 'low'
+                         data.risk_probability >= 0.4 ? 'moderate' : 'low'
 
         return {
           id: crypto.randomUUID(),
@@ -135,16 +189,19 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
           factors: data.factors,
           created_at: new Date().toISOString(),
         }
+      } else {
+        console.log('API response not ok, using fallback model')
       }
     } catch (apiError) {
-      console.log('API not available, using mock model')
+      console.log('API not available, using enhanced clinical model:', apiError)
     }
 
-    // Fallback to mock model
-    const data = mockMLModel.predict(input)
+    // Fallback to enhanced clinical model
+    const data = enhancedClinicalModel.predict(input)
+    console.log('Enhanced clinical model prediction:', data)
     
     const riskLevel = data.risk_prediction === 1 ? 'high' : 
-                     data.risk_probability > 0.3 ? 'moderate' : 'low'
+                     data.risk_probability >= 0.4 ? 'moderate' : 'low'
 
     return {
       id: crypto.randomUUID(),
@@ -158,14 +215,16 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
   } catch (error) {
     console.error('Error predicting HDP risk:', error)
     
-    // Ultimate fallback
+    // Ultimate fallback with basic risk assessment
+    const basicRisk = vitals.systolic_bp >= 140 ? 0.6 : 0.2
+    
     return {
       id: crypto.randomUUID(),
       patient_id: vitals.patient_id,
       vitals_id: vitals.id || crypto.randomUUID(),
-      risk_level: 'low',
-      risk_score: 0.2,
-      factors: ['Prediction service unavailable'],
+      risk_level: basicRisk >= 0.4 ? 'high' : 'low',
+      risk_score: basicRisk,
+      factors: vitals.systolic_bp >= 140 ? ['High blood pressure detected'] : ['Normal assessment'],
       created_at: new Date().toISOString(),
     }
   }

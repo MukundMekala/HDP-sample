@@ -65,11 +65,15 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
         created_at: new Date().toISOString(),
       }
 
+      console.log('Submitting vitals:', vitalsData)
+
       // Save vitals to mock storage
       mockVitalsStorage.push(vitalsData)
 
       // Get AI risk prediction
+      console.log('Getting AI risk prediction...')
       const riskPrediction = await predictHDPRisk(vitalsData)
+      console.log('Risk prediction result:', riskPrediction)
 
       // Save risk prediction to mock storage
       mockRiskStorage.push(riskPrediction)
