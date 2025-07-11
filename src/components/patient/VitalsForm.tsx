@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { VitalsInput } from '../../types'
+import { VitalsInput, RiskPrediction } from '../../types'
 import { useAuth } from '../../contexts/AuthContext'
 import { predictHDPRisk } from '../../services/api'
 import { LoadingSpinner } from '../ui/LoadingSpinner'

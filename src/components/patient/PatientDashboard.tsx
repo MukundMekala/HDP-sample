@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { VitalsInput, RiskPrediction, TrendData } from '../../types'
+import { VitalsInput, RiskPrediction, TrendData, UserProfile } from '../../types'
 import { predictHDPRisk } from '../../services/api'
 import { VitalsForm } from './VitalsForm'
 import { Chart } from '../ui/Chart'

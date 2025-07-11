@@ -6,6 +6,12 @@ import { RiskBadge } from '../ui/RiskBadge'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Users, AlertTriangle, Search } from 'lucide-react'
 
+interface PatientWithLatestVitals extends UserProfile {
+  latest_vitals?: VitalsInput
+  latest_risk?: RiskPrediction
+  vitals_count?: number
+}
+
 // Mock data for demo
 const mockPatients: PatientWithLatestVitals[] = [
   {
@@ -69,12 +75,6 @@ const mockPatients: PatientWithLatestVitals[] = [
     vitals_count: 8
   }
 ]
-
-interface PatientWithLatestVitals extends UserProfile {
-  latest_vitals?: VitalsInput
-  latest_risk?: RiskPrediction
-  vitals_count?: number
-}
 
 export function DoctorDashboard() {
   const { profile } = useAuth()
