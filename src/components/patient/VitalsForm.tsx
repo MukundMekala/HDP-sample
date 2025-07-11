@@ -49,6 +49,8 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
     e.preventDefault()
     if (!user) return
 
+    console.log('📝 Form data being submitted:', formData)
+
     setLoading(true)
     try {
       const vitalsData: VitalsInput = {
@@ -65,15 +67,15 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
         created_at: new Date().toISOString(),
       }
 
-      console.log('Submitting vitals:', vitalsData)
+      console.log('📊 Submitting vitals for AI analysis:', vitalsData)
 
       // Save vitals to mock storage
       mockVitalsStorage.push(vitalsData)
 
       // Get AI risk prediction
-      console.log('Getting AI risk prediction...')
+      console.log('🤖 Getting AI risk prediction...')
       const riskPrediction = await predictHDPRisk(vitalsData)
-      console.log('Risk prediction result:', riskPrediction)
+      console.log('🎯 Risk prediction result:', riskPrediction)
 
       // Save risk prediction to mock storage
       mockRiskStorage.push(riskPrediction)
