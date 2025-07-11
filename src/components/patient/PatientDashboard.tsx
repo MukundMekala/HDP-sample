@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { VitalsInput, RiskPrediction, TrendData } from '../../types'
+import { predictHDPRisk } from '../../services/api'
 import { VitalsForm } from './VitalsForm'
 import { Chart } from '../ui/Chart'
 import { RiskBadge } from '../ui/RiskBadge'
@@ -9,31 +10,8 @@ import { calculateWeeksPregnant } from '../../lib/utils'
 import { Heart, MessageCircle, TrendingUp, Calendar, Baby } from 'lucide-react'
 
 // Mock data for demo
-const mockVitals: VitalsInput[] = [
-  {
-    id: '1',
-    patient_id: 'mock-user-id',
-    date: new Date().toISOString().split('T')[0],
-    systolic_bp: 120,
-    diastolic_bp: 80,
-    heart_rate: 72,
-    weight: 65.5,
-    symptoms: [],
-    medication_taken: false,
-    notes: 'Feeling good today',
-    created_at: new Date().toISOString()
-  }
-]
-
-const mockRisk: RiskPrediction = {
-  id: '1',
-  patient_id: 'mock-user-id',
-  vitals_id: '1',
-  risk_level: 'low',
-  risk_score: 0.2,
-  factors: [],
-  created_at: new Date().toISOString()
-}
+const mockVitals: VitalsInput[] = []
+let mockRisk: RiskPrediction | null = null
 
 export function PatientDashboard() {
   const { profile } = useAuth()
@@ -51,24 +29,41 @@ export function PatientDashboard() {
   useEffect(() => {
     if (profile) {
       fetchVitals()
-      fetchLatestRisk()
     }
   }, [profile])
 
   const fetchVitals = async () => {
     if (!profile) return
 
-    // Use mock data for demo
+    // Use mock data for demo - start with empty array
     setVitals(mockVitals)
     generateTrendData(mockVitals)
+    
+    // Get latest risk if vitals exist
+    if (mockVitals.length > 0) {
+      await fetchLatestRisk()
+    }
+    
     setLoading(false)
   }
 
   const fetchLatestRisk = async () => {
     if (!profile) return
 
-    // Use mock data for demo
-    setLatestRisk(mockRisk)
+    // Get the latest risk from mock storage or calculate it
+    if (mockRisk) {
+      setLatestRisk(mockRisk)
+    } else if (vitals.length > 0) {
+      // Calculate risk for the latest vitals
+      try {
+        const latestVitals = vitals[0]
+        const riskPrediction = await predictHDPRisk(latestVitals)
+        mockRisk = riskPrediction
+        setLatestRisk(riskPrediction)
+      } catch (error) {
+        console.error('Error calculating risk:', error)
+      }
+    }
   }
 
   const generateTrendData = (vitalsData: VitalsInput[]) => {
@@ -90,10 +85,22 @@ export function PatientDashboard() {
     setTrendData(trends)
   }
 
-  const handleVitalsSubmit = (newVitals: VitalsInput) => {
-    setVitals(prev => [newVitals, ...prev])
-    generateTrendData([newVitals, ...vitals])
-    fetchLatestRisk()
+  const handleVitalsSubmit = async (newVitals: VitalsInput, riskPrediction: RiskPrediction) => {
+    console.log('📊 Dashboard received new vitals:', newVitals)
+    console.log('🎯 Dashboard received risk prediction:', riskPrediction)
+    
+    // Update vitals
+    const updatedVitals = [newVitals, ...vitals]
+    setVitals(updatedVitals)
+    generateTrendData(updatedVitals)
+    
+    // Update risk prediction
+    mockRisk = riskPrediction
+    setLatestRisk(riskPrediction)
+    
+    // Update mock storage
+    mockVitals.unshift(newVitals)
+    
     setShowVitalsForm(false)
   }
 

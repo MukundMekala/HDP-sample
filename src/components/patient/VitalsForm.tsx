@@ -10,7 +10,7 @@ const mockVitalsStorage: VitalsInput[] = []
 const mockRiskStorage: any[] = []
 
 interface VitalsFormProps {
-  onSubmit: (vitals: VitalsInput) => void
+  onSubmit: (vitals: VitalsInput, riskPrediction: RiskPrediction) => void
 }
 
 const SYMPTOM_OPTIONS = [
@@ -80,7 +80,8 @@ export function VitalsForm({ onSubmit }: VitalsFormProps) {
       // Save risk prediction to mock storage
       mockRiskStorage.push(riskPrediction)
 
-      onSubmit(vitalsData)
+      // Pass both vitals and risk prediction to parent
+      onSubmit(vitalsData, riskPrediction)
 
       // Reset form
       setFormData({

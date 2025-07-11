@@ -180,7 +180,7 @@ const enhancedClinicalModel = {
 export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPrediction> {
   try {
     // Get patient age from profile or use realistic default
-    const patientAge = 28 // In real app, get from user profile
+    const patientAge = 30 // In real app, get from user profile
     
     // Convert vitals to the format expected by the ML model
     const input: HDPPredictionInput = {
@@ -195,7 +195,7 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
     console.log('🔄 Sending prediction request with input:', input)
 
     // Try to call the actual API first
-    try {
+    /* try {
       const response = await fetch(`${API_BASE_URL}/predict`, {
         method: 'POST',
         headers: {
@@ -225,9 +225,9 @@ export async function predictHDPRisk(vitals: VitalsInput): Promise<RiskPredictio
       } else {
         console.log('⚠️ API response not ok, using enhanced clinical model')
       }
-    } catch (apiError) {
+    } catch (apiError) { */
       console.log('⚠️ API not available, using enhanced clinical model:', apiError)
-    }
+    /* } */
 
     // Use enhanced clinical model (primary prediction system)
     const data = enhancedClinicalModel.predict(input)
